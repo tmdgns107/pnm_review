@@ -9,7 +9,7 @@ export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<API
     let tableName: string = 'review_test';
     if(event.requestContext.path.includes('/prod/') || event.requestContext.path.includes('/live/')) {
         alias = 'prod';
-        tableName = 'review';
+        tableName = 'hp_review';
     }
 
     let response: APIGatewayProxyResultV2 = {
