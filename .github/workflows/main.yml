@@ -29,3 +29,6 @@ jobs:
           npx ncc build index.ts
           zip -j deploy.zip ./dist/*
           aws lambda update-function-code --function-name=petNmattReview --zip-file=fileb://deploy.zip
+      - name: Publish Lambda Function Version
+        run: |
+          VERSION=$(aws lambda publish-version --function-name petNmatHospital --query 'Version' --output text)
