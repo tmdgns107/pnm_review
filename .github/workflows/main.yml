@@ -31,4 +31,4 @@ jobs:
           aws lambda update-function-code --function-name=petNmattReview --zip-file=fileb://deploy.zip
       - name: Publish Lambda Function Version
         run: |
-          VERSION=$(aws lambda publish-version --function-name petNmatHospital --query 'Version' --output text)
+          VERSION=$(aws lambda publish-version --function-name petNmattReview --query 'Version' --output text)
