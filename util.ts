@@ -1,11 +1,31 @@
 import {ImageAnnotatorClient} from '@google-cloud/vision';
 import AWS from 'aws-sdk';
 import axios from 'axios';
+import {APIGatewayProxyResultV2} from "aws-lambda";
+import mysql from 'mysql2/promise';
+
+export async function getConnection(alias: string): Promise<any> {
+    let connection;
+    try{
+        connection = await mysql.createConnection({
+            host: process.env[`${alias.toUpperCase()}_DB_HOST`],
+            user: process.env[`${alias.toUpperCase()}_DB_USER`],
+            password: process.env[`${alias.toUpperCase()}_DB_PASSWORD`],
+            port: 3306,
+            database: process.env[`${alias.toUpperCase()}_DB_NAME`]
+        });
+
+        return connection;
+    }catch (e) {
+        console.log("Error in getConnection", e);
+        return false;
+    };
+}
 
 /** DB 쿼리 실행 **/
-export async function queryMySQL(connection: any, query: string, values: any): Promise<any> {
+export async function queryMySQL(dbConnection: any, query: string, values: any): Promise<any> {
     try {
-        const [rows] = await connection.execute(query, values);
+        const [rows] = await dbConnection.execute(query, values);
         return rows;
     } catch (error) {
         throw error;
@@ -13,7 +33,7 @@ export async function queryMySQL(connection: any, query: string, values: any): P
 }
 
 /** Google Vision API **/
-export async function callVisionAPI(imageUrl: string): Promise<object>{
+export async function callVisionAPI(imageUrl: string): Promise<any>{
     try{
         /** GCP Client connect **/
         const client = new ImageAnnotatorClient({
@@ -67,12 +87,12 @@ export async function isReceipt(imageBuffer: Buffer): Promise<boolean>{
     }
 }
 
-/** GPT API 주소 추출 **/
+/** GPT API 주소 추출 -> 사용하지 않음 **/
 export async function addressExtractByGPT(text: string): Promise<any>{
     try{
         const GPT_API_KEY: string = process.env.GPT_API_KEY;
         const response = await axios.post(
-            'https://api.openai.com/v1/engines/davinci-codex/completions',
+            'https://api.openai.com/v1/engines/davinci/completions',
             {
                 prompt: `Extract the address from the following text:\n${text}`,
                 max_tokens: 100,
@@ -100,7 +120,7 @@ export async function addressExtractByGPT(text: string): Promise<any>{
 }
 
 /** URL을 Buffer 데이터로 변환 **/
-async function imageUrlToBuffer(imageUrl): Promise<Buffer> {
+export async function imageUrlToBuffer(imageUrl): Promise<Buffer> {
     try {
         const response = await axios.get(imageUrl, {
             responseType: 'arraybuffer',
@@ -113,3 +133,4 @@ async function imageUrlToBuffer(imageUrl): Promise<Buffer> {
         return null;
     }
 }
+
