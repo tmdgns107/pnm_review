@@ -4,8 +4,8 @@ import axios from 'axios';
 import {APIGatewayProxyResultV2} from "aws-lambda";
 import mysql from 'mysql2/promise';
 
-export async function getConnection(alias: string): Promise<any> {
-    let connection;
+export async function getConnection(alias: string): Promise<mysql.Connection> {
+    let connection: mysql.Connection;
     try{
         connection = await mysql.createConnection({
             host: process.env[`${alias.toUpperCase()}_DB_HOST`],
@@ -18,7 +18,7 @@ export async function getConnection(alias: string): Promise<any> {
         return connection;
     }catch (e) {
         console.log("Error in getConnection", e);
-        return false;
+        return connection;
     };
 }
 
