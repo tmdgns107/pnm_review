@@ -130,6 +130,8 @@ async function handlePostRequest(alias: string, event: APIGatewayProxyEvent): Pr
         const visionAPI = visionAPIResult.text;
         const visionAPIArr = visionAPI.split('\n');
 
+        console.log("visionAPIArr", visionAPIArr);
+
         const doName: string[] = ['경기도'];
         let addressArr: string[] = [];
         for (let text of visionAPIArr) {
