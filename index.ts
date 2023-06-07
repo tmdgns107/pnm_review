@@ -4,9 +4,10 @@ import mysql from "mysql2/promise";
 import { stringSimilarity } from "string-similarity-js";
 
 export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResultV2> => {
+    console.log("Event", event);
 
     let alias: string = 'dev';
-    if(event.requestContext.path.includes('/prod/') || event.requestContext.path.includes('/live/')) {
+    if(event.path.includes('/prod/') || event.path.includes('/live/')) {
         alias = 'prod';
     }
 
