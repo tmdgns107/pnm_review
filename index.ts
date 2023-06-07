@@ -207,6 +207,7 @@ async function handlePostRequest(alias: string, event: APIGatewayProxyEvent): Pr
 function sendResponse(errorCode: number, items: any[], message: string): object{
     let response: APIGatewayProxyResultV2 = {
         statusCode: 200,
+        headers: {'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': true},
         body: ''
     };
     let responseBody: { message: string; errorCode: number, Items: any[]};
