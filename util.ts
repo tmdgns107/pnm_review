@@ -36,15 +36,20 @@ export async function queryMySQL(dbConnection: any, query: string, values: any):
 }
 
 /** Google Vision API **/
-export async function callVisionAPI(imageUrl: string): Promise<any>{
+export async function callVisionAPI(imageBuffer: Buffer): Promise<any>{
     try{
+        /** GCP Credentials 가져오기 **/
+        const credentials: string = process.env.GCP_CREDENTIALS;
+        console.log("typeof credentials", typeof credentials);
+        console.log("credentials", credentials);
+
         /** GCP Client connect **/
         const client = new ImageAnnotatorClient({
-            credentials: JSON.parse(process.env.GCP_CREDENTIALS) // 키 파일 경로
+            credentials: JSON.parse(credentials) // 키 파일 경로
         });
 
         /** call vision api **/
-        const [result] = await client.textDetection(imageUrl);
+        const [result] = await client.textDetection(imageBuffer);
 
         /** textAnnotations 값이 없다면 오류처리 **/
         if(!result.textAnnotations || (result.textAnnotations && result.textAnnotations.length === 0)){
