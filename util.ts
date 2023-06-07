@@ -72,11 +72,11 @@ export async function isReceipt(imageBuffer: Buffer): Promise<boolean>{
             }
         };
 
-        const detectText = await rekognition.detectText(params).promise();
-        const textDetections = detectText.TextDetections;
-        console.log("detectText in isReceipt", textDetections);
+        const detectLabels = await rekognition.detectLabels(params).promise();
+        const labelDetections = detectLabels.Labels;
+        console.log("labelDetections in isReceipt", labelDetections);
 
-        const receipts = textDetections.filter(detection => detection.Confidence >= 80 && detection.DetectedText.toLowerCase().includes('receipt'));
+        const receipts = labelDetections.filter(detection => detection.Confidence >= 80 && detection.Name.toLowerCase().includes('receipt'));
         if (receipts.length > 0) {
             console.log('There is a receipt in the image.');
             return true;

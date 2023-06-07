@@ -102,8 +102,8 @@ async function handlePostRequest(alias: string, event: APIGatewayProxyEvent): Pr
         const isReceipt: boolean = await util.isReceipt(imageBuffer);
 
         if(!isReceipt){
-            console.log("Image is not a receipt file");
-            return sendResponse(204, [], 'Image is not a receipt file');
+            console.log("Image is not a receipt file.");
+            return sendResponse(204, [], 'Image is not a receipt file.');
         }
 
         connection = await util.getConnection(alias);
