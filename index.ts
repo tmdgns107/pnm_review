@@ -112,6 +112,7 @@ async function handlePostRequest(alias: string, event: APIGatewayProxyEvent): Pr
         const searchQuery: string = `SELECT * FROM ${hospitalTableName} WHERE id = ?`;
         const visionAPIResult = await util.callVisionAPI(imageBuffer);
         const hospitalResult = await util.queryMySQL(connection, searchQuery, [id]);
+
         // let [hospitalResult, visionAPIResult] = await Promise.all([
         //     util.queryMySQL(connection, searchQuery, [id]),
         //     util.callVisionAPI(imageBuffer)
