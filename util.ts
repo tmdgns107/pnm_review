@@ -1,8 +1,11 @@
 import {ImageAnnotatorClient} from '@google-cloud/vision';
 import AWS from 'aws-sdk';
 import axios from 'axios';
-import {APIGatewayProxyResultV2} from "aws-lambda";
 import mysql from 'mysql2/promise';
+
+const s3: AWS.S3 = new AWS.S3({
+    region: 'ap-northeast-2' // S3 버킷의 리전에 맞게 수정
+});
 
 export async function getConnection(alias: string): Promise<mysql.Connection> {
     let connection: mysql.Connection;
@@ -120,14 +123,23 @@ export async function addressExtractByGPT(text: string): Promise<any>{
 }
 
 /** URL을 Buffer 데이터로 변환 **/
-export async function imageUrlToBuffer(imageUrl): Promise<Buffer> {
+export async function imageUrlToBuffer(alias, imageUrl): Promise<Buffer> {
     try {
-        const response = await axios.get(imageUrl, {
-            responseType: 'arraybuffer',
-        });
+        let bucket: string = 'petnmat-dev';
+        if(alias === 'prod')
+            bucket = 'petnmat-prod';
 
-        const imageBuffer: Buffer = Buffer.from(response.data, 'binary');
-        return imageBuffer;
+        const key = imageUrl.split('amazonaws.com/')[1];
+        const params = {
+            Bucket: bucket,
+            Key: key
+        }
+
+        const imageFile = await s3.getObject(params).promise();
+        if(imageFile.Body)
+            return imageFile.Body as Buffer;
+        else
+            return null;
     } catch (error) {
         console.log('Error in imageUrlToBuffer:', error);
         return null;

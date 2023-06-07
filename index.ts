@@ -7,7 +7,7 @@ export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<API
     console.log("Event", event);
 
     let alias: string = 'dev';
-    if(event.path.includes('/prod/') || event.path.includes('/live/')) {
+    if(event.requestContext.path.includes('/prod/') || event.requestContext.path.includes('/live/')) {
         alias = 'prod';
     }
 
@@ -94,12 +94,16 @@ async function handlePostRequest(alias: string, event: APIGatewayProxyEvent): Pr
             return sendResponse(202, [], 'receiptImage, id are required.');
         }
 
-        const imageBuffer: Buffer = await util.imageUrlToBuffer(receiptImage);
+        const imageBuffer: Buffer = await util.imageUrlToBuffer(alias, receiptImage);
+        if(!imageBuffer){
+            console.log("Failed to convert image file to buffer data.");
+            return sendResponse(203, [], 'Failed to convert image file to buffer data.');
+        }
         const isReceipt: boolean = await util.isReceipt(imageBuffer);
 
         if(!isReceipt){
             console.log("Image is not a receipt file");
-            return sendResponse(203, [], 'Image is not a receipt file');
+            return sendResponse(204, [], 'Image is not a receipt file');
         }
 
         connection = await util.getConnection(alias);
@@ -116,11 +120,11 @@ async function handlePostRequest(alias: string, event: APIGatewayProxyEvent): Pr
 
         if(hospitalResult.length === 0){
             console.log("Hospital information could not be found.");
-            return sendResponse(204, [], 'Hospital information could not be found.');
+            return sendResponse(205, [], 'Hospital information could not be found.');
         }
         if(visionAPIResult.message){
             console.log("An error occurred while requesting the vision api.");
-            return sendResponse(205, [], 'An error occurred while requesting the vision api.');
+            return sendResponse(206, [], 'An error occurred while requesting the vision api.');
         }
 
         const visionAPI = visionAPIResult.text;
@@ -155,7 +159,7 @@ async function handlePostRequest(alias: string, event: APIGatewayProxyEvent): Pr
 
         if(!isSimilarAddress){
             console.log("The address on the receipt and the address of the veterinary clinic do not match.");
-            return sendResponse(206, [], 'The address on the receipt and the address of the veterinary clinic do not match.');
+            return sendResponse(207, [], 'The address on the receipt and the address of the veterinary clinic do not match.');
         }
 
         const currentTime: string = new Date().toISOString();
