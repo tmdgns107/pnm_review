@@ -110,10 +110,12 @@ async function handlePostRequest(alias: string, event: APIGatewayProxyEvent): Pr
 
         /** 병원정보 가져오기 및 vision api 호출 **/
         const searchQuery: string = `SELECT * FROM ${hospitalTableName} WHERE id = ?`;
-        let [hospitalResult, visionAPIResult] = await Promise.all([
-            util.queryMySQL(connection, searchQuery, [id]),
-            util.callVisionAPI(imageBuffer)
-        ]);
+        const visionAPIResult = await util.callVisionAPI(imageBuffer);
+        const hospitalResult = await util.queryMySQL(connection, searchQuery, [id]);
+        // let [hospitalResult, visionAPIResult] = await Promise.all([
+        //     util.queryMySQL(connection, searchQuery, [id]),
+        //     util.callVisionAPI(imageBuffer)
+        // ]);
 
         console.log("hospitalResult", hospitalResult);
         console.log("visionAPIResult", visionAPIResult);
