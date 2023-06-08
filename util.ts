@@ -45,6 +45,7 @@ export async function callVisionAPI(imageBuffer: Buffer): Promise<any>{
 
         /** GCP Client connect **/
         const client = new ImageAnnotatorClient({
+            endpoint: 'asia-northeast3-vision.googleapis.com',
             credentials: JSON.parse(credentials) // 키 파일 경로
         });
 
