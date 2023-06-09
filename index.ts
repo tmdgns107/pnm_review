@@ -110,69 +110,73 @@ async function handlePostRequest(alias: string, event: APIGatewayProxyEvent): Pr
 
         /** 병원정보 가져오기 및 vision api 호출 **/
         const searchQuery: string = `SELECT * FROM ${hospitalTableName} WHERE id = ?`;
-        const visionAPIResult = await util.callVisionAPI(imageBuffer);
         const hospitalResult = await util.queryMySQL(connection, searchQuery, [id]);
+        // const visionAPIResult = await util.callVisionAPI(imageBuffer);
 
-        // let [hospitalResult, visionAPIResult] = await Promise.all([
+        // const [hospitalResult, visionAPIResult] = await Promise.all([
         //     util.queryMySQL(connection, searchQuery, [id]),
         //     util.callVisionAPI(imageBuffer)
         // ]);
+        //
+        // console.log("hospitalResult", hospitalResult);
+        // console.log("visionAPIResult", visionAPIResult);
+        //
+        // if(hospitalResult.length === 0){
+        //     console.log("Hospital information could not be found.");
+        //     return sendResponse(205, [], 'Hospital information could not be found.');
+        // }
+        // if(visionAPIResult.message){
+        //     console.log("An error occurred while requesting the vision api.");
+        //     return sendResponse(206, [], 'An error occurred while requesting the vision api.');
+        // }
+        //
+        // const visionAPI = visionAPIResult.text;
+        // const visionAPIArr = visionAPI.split('\n');
+        //
+        // console.log("visionAPIArr", visionAPIArr);
+        //
+        // const doName: string[] = ['경기도'];
+        // let addressArr: string[] = [];
+        // for (let text of visionAPIArr) {
+        //     if (doName.some(doItem => text.includes(doItem))) {
+        //         addressArr.push(text);
+        //     }
+        // }
+        //
+        // console.log("addressArr", addressArr);
+        //
+        // const lotNoAddr = hospitalResult[0].lotNoAddr;
+        // const roadNmAddr = hospitalResult[0].roadNmAddr;
+        //
+        // let isSimilarAddress: boolean = false;
+        // for (let addr of addressArr) {
+        //     let lotNoAddrSimilarity: number = lotNoAddr ? stringSimilarity(addr, lotNoAddr) : 0;
+        //     let roadNmAddrSimilarity: number = roadNmAddr ? stringSimilarity(addr, roadNmAddr) : 0;
+        //
+        //     console.log("lotNoAddrSimilarity", lotNoAddrSimilarity);
+        //     console.log("roadNmAddrSimilarity", roadNmAddrSimilarity);
+        //
+        //     if (lotNoAddrSimilarity >= 0.75 || roadNmAddrSimilarity >= 0.75) {
+        //         isSimilarAddress = true;
+        //         break;
+        //     }
+        // }
+        //
+        // if(!isSimilarAddress){
+        //     console.log("The address on the receipt and the address of the veterinary clinic do not match.");
+        //     return sendResponse(207, [], 'The address on the receipt and the address of the veterinary clinic do not match.');
+        // }
 
-        console.log("hospitalResult", hospitalResult);
-        console.log("visionAPIResult", visionAPIResult);
-
-        if(hospitalResult.length === 0){
-            console.log("Hospital information could not be found.");
-            return sendResponse(205, [], 'Hospital information could not be found.');
-        }
-        if(visionAPIResult.message){
-            console.log("An error occurred while requesting the vision api.");
-            return sendResponse(206, [], 'An error occurred while requesting the vision api.');
-        }
-
-        const visionAPI = visionAPIResult.text;
-        const visionAPIArr = visionAPI.split('\n');
-
-        console.log("visionAPIArr", visionAPIArr);
-
-        const doName: string[] = ['경기도'];
-        let addressArr: string[] = [];
-        for (let text of visionAPIArr) {
-            if (doName.some(doItem => text.includes(doItem))) {
-                addressArr.push(text);
-            }
-        }
-
-        console.log("addressArr", addressArr);
-
-        const lotNoAddr = hospitalResult[0].lotNoAddr;
-        const roadNmAddr = hospitalResult[0].roadNmAddr;
-
-        let isSimilarAddress: boolean = false;
-        for (let addr of addressArr) {
-            let lotNoAddrSimilarity: number = lotNoAddr ? stringSimilarity(addr, lotNoAddr) : 0;
-            let roadNmAddrSimilarity: number = roadNmAddr ? stringSimilarity(addr, roadNmAddr) : 0;
-
-            console.log("lotNoAddrSimilarity", lotNoAddrSimilarity);
-            console.log("roadNmAddrSimilarity", roadNmAddrSimilarity);
-
-            if (lotNoAddrSimilarity >= 0.75 || roadNmAddrSimilarity >= 0.75) {
-                isSimilarAddress = true;
-                break;
-            }
-        }
-
-        if(!isSimilarAddress){
-            console.log("The address on the receipt and the address of the veterinary clinic do not match.");
-            return sendResponse(207, [], 'The address on the receipt and the address of the veterinary clinic do not match.');
-        }
-
+        /** Insert query 정의 **/
         const currentTime: string = new Date().toISOString();
         let insertValues: any[] = [id, userId, body.rate, body.comment, receiptImage, body.treatmentNm, currentTime, currentTime];
         let insertQuery: string = `INSERT INTO ${reviewTableName} (hospitalId, userId, rate, comment, imageUrl, treatmentNm, createTime, updateTime) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
         console.log("insertValues", insertValues);
         console.log("insertQuery", insertQuery);
 
+        /** Update query 정의
+         *  기존 Hospital 정보의 rate 및 reviewCount 정보를 가져와서 업데이트 하도록 해야함.
+         * **/
         let updateValues: any[] = [id];
         let updateQuery: string;
         const rate: number = Number(body.rate);
@@ -187,6 +191,7 @@ async function handlePostRequest(alias: string, event: APIGatewayProxyEvent): Pr
         console.log("updateValues", updateValues);
         console.log("updateQuery", updateQuery);
 
+        /** Insert 및 Update query 실행 **/
         await Promise.all([
             util.queryMySQL(connection, insertQuery, insertValues),
             util.queryMySQL(connection, updateQuery, updateValues)
